@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>License Type Recommender</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e90ff, #00bfff);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            width: 50%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            position: relative;
+        }
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .form-group.active {
+            display: block;
+            opacity: 1;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .button-group button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1e90ff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 5px;
+        }
+        .button-group button:hover {
+            background-color: #00bfff;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .license-details {
+            margin-top: 20px;
+        }
+        .project-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        .project {
+            background-color: #f9f9f9;
+            padding: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .project img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .column {
+            width: 30%;
+        }
+        .restart-button {
+            background-color: #1e90ff;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 20px 0;
+        }
+        .restart-button:hover {
+            background-color: #00bfff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>License Type Recommender</h1>
+        <form id="licenseForm">
+            <div class="form-group" id="question1">
+                <label for="dataType">What type of data are you looking to license?</label>
+                <div class="button-group">
+                    <button type="button" onclick="selectOption('dataType', 'Software', 1)">Software</button>
+                    <button type="button" onclick="selectOption('dataType', 'Multimedia', 1)">Multimedia</button>
+                    <button type="button" onclick="selectOption('dataType', 'Font', 1)">Font</button>
+                    <button type="button" onclick="selectOption('dataType', 'Hardware', 1)">Hardware</button>
+                    <button type="button" onclick="selectOption('dataType', 'Branding', 1)">Branding</button>
+                    <button type="button" onclick="selectOption('dataType', 'Other', 1)">Other</button>
+                </div>
+            </div>
+            <div class="form-group" id="question2">
+                <label for="distribution">How do you plan to distribute the data?</label>
+                <div class="button-group">
+                    <button type="button" onclick="selectOption('distribution', 'Freely', 2)">Freely</button>
+                    <button type="button" onclick="selectOption('distribution', 'Conditional', 2)">Under certain conditions</button>
+                    <button type="button" onclick="selectOption('distribution', 'Commercial', 2)">For commercial purposes</button>
+                </div>
+                <div class="button-group">
+                    <button type="button" onclick="previousQuestion(1)">Previous</button>
+                </div>
+            </div>
+            <div class="form-group" id="question3">
+                <label for="redistribution">Are you open to allowing others to redistribute the data?</label>
+                <div class="button-group">
+                    <button type="button" onclick="selectOption('redistribution', 'YesFree', 3)">Yes, for any purpose</button>
+                    <button type="button" onclick="selectOption('redistribution', 'YesRestricted', 3)">Yes, with restricted purposes</button>
+                    <button type="button" onclick="selectOption('redistribution', 'No', 3)">No</button>
+                </div>
+                <div class="button-group">
+                    <button type="button" onclick="previousQuestion(2)">Previous</button>
+                </div>
+            </div>
+            <div class="form-group" id="question4">
+                <label for="derivatives">Are derivative works allowed?</label>
+                <div class="button-group">
+                    <button type="button" onclick="selectOption('derivatives', 'Yes', 4)">Yes</button>
+                    <button type="button" onclick="selectOption('derivatives', 'YesSameLicense', 4)">Yes, same license</button>
+                    <button type="button" onclick="selectOption('derivatives', 'YesModifications', 4)">Yes, modifications only</button>
+                    <button type="button" onclick="selectOption('derivatives', 'No', 4)">No</button>
+                </div>
+                <div class="button-group">
+                    <button type="button" onclick="previousQuestion(3)">Previous</button>
+                </div>
+            </div>
+            <div class="form-group" id="question5">
+                <label for="attribution">Is it important for users to attribute the original creator when using the data?</label>
+                <div class="button-group">
+                    <button type="button" onclick="selectOption('attribution', 'Yes', 5)">Yes</button>
+                    <button type="button" onclick="selectOption('attribution', 'No', 5)">No</button>
+                </div>
+                <div class="button-group">
+                    <button type="button" onclick="previousQuestion(4)">Previous</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="result" class="result">
+            <!-- License recommendation will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        const licenseTypes = {
+            "Public Domain": {
+                description: "Works that are free for public use without any restrictions.",
+                permissions: ["Commercial use", "Modification", "Distribution", "Private use"],
+                conditions: [],
+                limitations: ["Liability", "Warranty"]
+            },
+            "Copyleft License": {
+                description: "Requires anyone who distributes the works or derivative works to also distribute the source under the same license.",
+                permissions: ["Commercial use", "Modification", "Distribution", "Private use"],
+                conditions: ["Disclose source", "Same license", "Include copyright and license notice"],
+                limitations: ["Liability", "Warranty"]
+            },
+            "Open Source/Permissive License": {
+                description: "Allows anyone to use, modify, and distribute the works with minimal restrictions.",
+                permissions: ["Commercial use", "Modification", "Distribution", "Private use"],
+                conditions: ["Include copyright and license notice"],
+                limitations: ["Liability", "Warranty"]
+            },
+            "Proprietary (Commercial) License": {
+                description: "Restricts how the works can be used, modified, and distributed, often requiring a purchase or subscription.",
+                permissions: ["Commercial use", "Modification", "Distribution", "Private use"],
+                conditions: ["Disclose source", "Same license", "Include copyright and license notice"],
+                limitations: ["Liability", "Warranty"]
+            },
+            "Proprietary (Non-Commercial) License": {
+                description: "Restricts how the works can be used, modified, and distributed, often requiring a purchase or subscription.",
+                permissions: ["Commercial use", "Modification", "Distribution", "Private use"],
+                conditions: ["Disclose source", "Same license", "Include copyright and license notice"],
+                limitations: ["Liability", "Warranty"]
+            },
+            "Unlicensed": {
+                description: "Works without a license. By default, all rights are reserved to the author.",
+                permissions: [],
+                conditions: [],
+                limitations: ["Liability", "Warranty"]
+            }
+        };
+
+        const dataTypeExamples = {
+            "Software": {
+                "Public Domain": [
+                    { name: "SQLite", icon: "sqlite-icon.png", link: "https://www.sqlite.org/", license: "Public Domain" },
+                    { name: "CERN-WP", icon: "cern-icon.png", link: "https://web.cern.ch/", license: "Public Domain" },
+                    { name: "Wikimedia Commons", icon: "wikimedia-icon.png", link: "https://commons.wikimedia.org/", license: "Public Domain" },
+                    { name: "ImageNet", icon: "imagenet-icon.png", link: "http://www.image-net.org/", license: "Public Domain" },
+                    { name: "OpenStreetMap", icon: "osm-icon.png", link: "https://www.openstreetmap.org/", license: "Public Domain" },
+                    { name: "Classic Literature", icon: "literature-icon.png", link: "https://www.gutenberg.org/", license: "Public Domain" },
+                    { name: "NASA Data", icon: "nasa-icon.png", link: "https://data.nasa.gov/", license: "Public Domain" },
+                    { name: "USGS Data", icon: "usgs-icon.png", link: "https://www.usgs.gov/", license: "Public Domain" }
+                ],
+                "Copyleft License": [
+                    { name: "Linux Kernel", icon: "linux-icon.png", link: "https://www.kernel.org/", license: "GPLv2" },
+                    { name: "WordPress", icon: "wordpress-icon.png", link: "https://wordpress.org/", license: "GPLv2" },
+                    { name: "GIMP", icon: "gimp-icon.png", link: "https://www.gimp.org/", license: "GPLv3" },
+                    { name: "Blender", icon: "blender-icon.png", link: "https://www.blender.org/", license: "GPLv2" },
+                    { name: "VLC Media Player", icon: "vlc-icon.png", link: "https://www.videolan.org/vlc/", license: "GPLv2" },
+                    { name: "MySQL", icon: "mysql-icon.png", link: "https://www.mysql.com/", license: "GPLv2" },
+                    { name: "LibreOffice", icon: "libreoffice-icon.png", link: "https://www.libreoffice.org/", license: "MPL" },
+                    { name: "Firefox", icon: "firefox-icon.png", link: "https://www.mozilla.org/en-US/firefox/new/", license: "MPL" }
+                ],
+                "Open Source/Permissive License": [
+                    { name: "jQuery", icon: "jquery-icon.png", link: "https://jquery.com/", license: "MIT License" },
+                    { name: "Node.js", icon: "nodejs-icon.png", link: "https://nodejs.org/", license: "MIT License" },
+                    { name: "Bootstrap", icon: "bootstrap-icon.png", link: "https://getbootstrap.com/", license: "MIT License" },
+                    { name: "React", icon: "react-icon.png", link: "https://reactjs.org/", license: "MIT License" },
+                    { name: "Font Awesome", icon: "fontawesome-icon.png", link: "https://fontawesome.com/", license: "MIT License" },
+                    { name: "VS Code", icon: "vscode-icon.png", link: "https://code.visualstudio.com/", license: "MIT License" },
+                    { name: "D3.js", icon: "d3-icon.png", link: "https://d3js.org/", license: "BSD-3-Clause" },
+                    { name: "TensorFlow", icon: "tensorflow-icon.png", link: "https://www.tensorflow.org/", license: "Apache License 2.0" }
+                ],
+                "Proprietary (Commercial) License": [
+                    { name: "Microsoft Windows", icon: "windows-icon.png", link: "https://www.microsoft.com/en-us/windows", license: "Proprietary" },
+                    { name: "Adobe Photoshop", icon: "photoshop-icon.png", link: "https://www.adobe.com/products/photoshop.html", license: "Proprietary" },
+                    { name: "Microsoft Office", icon: "office-icon.png", link: "https://www.microsoft.com/en-us/microsoft-365", license: "Proprietary" },
+                    { name: "Autodesk AutoCAD", icon: "autocad-icon.png", link: "https://www.autodesk.com/products/autocad/overview", license: "Proprietary" },
+                    { name: "MATLAB", icon: "matlab-icon.png", link: "https://www.mathworks.com/products/matlab.html", license: "Proprietary" },
+                    { name: "Oracle Database", icon: "oracle-icon.png", link: "https://www.oracle.com/database/", license: "Proprietary" },
+                    { name: "Salesforce", icon: "salesforce-icon.png", link: "https://www.salesforce.com/", license: "Proprietary" },
+                    { name: "SAP", icon: "sap-icon.png", link: "https://www.sap.com/", license: "Proprietary" }
+                ],
+                "Proprietary (Non-Commercial) License": [
+                    { name: "Microsoft Windows", icon: "windows-icon.png", link: "https://www.microsoft.com/en-us/windows", license: "Proprietary" },
+                    { name: "Adobe Photoshop", icon: "photoshop-icon.png", link: "https://www.adobe.com/products/photoshop.html", license: "Proprietary" },
+                    { name: "Microsoft Office", icon: "office-icon.png", link: "https://www.microsoft.com/en-us/microsoft-365", license: "Proprietary" },
+                    { name: "Autodesk AutoCAD", icon: "autocad-icon.png", link: "https://www.autodesk.com/products/autocad/overview", license: "Proprietary" },
+                    { name: "MATLAB", icon: "matlab-icon.png", link: "https://www.mathworks.com/products/matlab.html", license: "Proprietary" },
+                    { name: "Oracle Database", icon: "oracle-icon.png", link: "https://www.oracle.com/database/", license: "Proprietary" },
+                    { name: "Salesforce", icon: "salesforce-icon.png", link: "https://www.salesforce.com/", license: "Proprietary" },
+                    { name: "SAP", icon: "sap-icon.png", link: "https://www.sap.com/", license: "Proprietary" }
+                ],
+                "Unlicensed": [
+                    { name: "Private Projects", icon: "private-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Confidential Documents", icon: "confidential-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Personal Use Scripts", icon: "scripts-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Internal Tools", icon: "internal-tools-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Work in Progress", icon: "wip-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Proof of Concepts", icon: "poc-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Unreleased Projects", icon: "unreleased-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Experimental Code", icon: "experimental-icon.png", link: "#", license: "Unlicensed" }
+                ]
+            },
+            "Multimedia": {
+                "Public Domain": [
+                    { name: "Wikimedia Commons", icon: "wikimedia-icon.png", link: "https://commons.wikimedia.org/", license: "Public Domain" },
+                    { name: "NASA Images", icon: "nasa-icon.png", link: "https://images.nasa.gov/", license: "Public Domain" },
+                    { name: "Public Domain Archive", icon: "archive-icon.png", link: "https://publicdomainarchive.com/", license: "Public Domain" },
+                    { name: "Pixabay", icon: "pixabay-icon.png", link: "https://pixabay.com/", license: "Public Domain" },
+                    { name: "Pexels", icon: "pexels-icon.png", link: "https://www.pexels.com/", license: "Public Domain" },
+                    { name: "Flickr Commons", icon: "flickr-icon.png", link: "https://www.flickr.com/commons", license: "Public Domain" },
+                    { name: "Unsplash", icon: "unsplash-icon.png", link: "https://unsplash.com/", license: "Public Domain" },
+                    { name: "Smithsonian Open Access", icon: "smithsonian-icon.png", link: "https://www.si.edu/openaccess", license: "Public Domain" }
+                ],
+                "Copyleft License": [
+                    { name: "Wikipedia", icon: "wikipedia-icon.png", link: "https://www.wikipedia.org/", license: "CC BY-SA 3.0" },
+                    { name: "Flickr Creative Commons", icon: "flickr-icon.png", link: "https://www.flickr.com/creativecommons/", license: "CC BY-SA 2.0" },
+                    { name: "OpenClipart", icon: "openclipart-icon.png", link: "https://openclipart.org/", license: "CC BY-SA 4.0" },
+                    { name: "Creative Commons", icon: "cc-icon.png", link: "https://creativecommons.org/", license: "CC BY-SA 4.0" },
+                    { name: "Internet Archive", icon: "archive-icon.png", link: "https://archive.org/", license: "CC BY-SA 3.0" },
+                    { name: "Wikimedia Commons", icon: "wikimedia-icon.png", link: "https://commons.wikimedia.org/", license: "CC BY-SA 3.0" },
+                    { name: "Freesound", icon: "freesound-icon.png", link: "https://freesound.org/", license: "CC BY 3.0" },
+                    { name: "LibreStock", icon: "librestock-icon.png", link: "https://librestock.com/", license: "CC BY-SA 4.0" }
+                ],
+                "Open Source/Permissive License": [
+                    { name: "Pixabay", icon: "pixabay-icon.png", link: "https://pixabay.com/", license: "CC0 1.0" },
+                    { name: "Pexels", icon: "pexels-icon.png", link: "https://www.pexels.com/", license: "CC0 1.0" },
+                    { name: "Unsplash", icon: "unsplash-icon.png", link: "https://unsplash.com/", license: "Unsplash License" },
+                    { name: "SoundCloud", icon: "soundcloud-icon.png", link: "https://soundcloud.com/", license: "CC BY 3.0" },
+                    { name: "Free Music Archive", icon: "fma-icon.png", link: "https://freemusicarchive.org/", license: "CC BY 3.0" },
+                    { name: "Jamendo", icon: "jamendo-icon.png", link: "https://www.jamendo.com/", license: "CC BY 3.0" },
+                    { name: "Openverse", icon: "openverse-icon.png", link: "https://wordpress.org/openverse/", license: "CC0 1.0" },
+                    { name: "Vimeo", icon: "vimeo-icon.png", link: "https://vimeo.com/", license: "CC BY 3.0" }
+                ],
+                "Proprietary (Commercial) License": [
+                    { name: "Adobe Stock", icon: "adobe-icon.png", link: "https://stock.adobe.com/", license: "Proprietary" },
+                    { name: "Getty Images", icon: "getty-icon.png", link: "https://www.gettyimages.com/", license: "Proprietary" },
+                    { name: "Shutterstock", icon: "shutterstock-icon.png", link: "https://www.shutterstock.com/", license: "Proprietary" },
+                    { name: "iStock", icon: "istock-icon.png", link: "https://www.istockphoto.com/", license: "Proprietary" },
+                    { name: "Alamy", icon: "alamy-icon.png", link: "https://www.alamy.com/", license: "Proprietary" },
+                    { name: "Fotolia", icon: "fotolia-icon.png", link: "https://www.fotolia.com/", license: "Proprietary" },
+                    { name: "123RF", icon: "123rf-icon.png", link: "https://www.123rf.com/", license: "Proprietary" },
+                    { name: "Dreamstime", icon: "dreamstime-icon.png", link: "https://www.dreamstime.com/", license: "Proprietary" }
+                ],
+                "Proprietary (Non-Commercial) License": [
+                    { name: "Adobe Stock", icon: "adobe-icon.png", link: "https://stock.adobe.com/", license: "Proprietary" },
+                    { name: "Getty Images", icon: "getty-icon.png", link: "https://www.gettyimages.com/", license: "Proprietary" },
+                    { name: "Shutterstock", icon: "shutterstock-icon.png", link: "https://www.shutterstock.com/", license: "Proprietary" },
+                    { name: "iStock", icon: "istock-icon.png", link: "https://www.istockphoto.com/", license: "Proprietary" },
+                    { name: "Alamy", icon: "alamy-icon.png", link: "https://www.alamy.com/", license: "Proprietary" },
+                    { name: "Fotolia", icon: "fotolia-icon.png", link: "https://www.fotolia.com/", license: "Proprietary" },
+                    { name: "123RF", icon: "123rf-icon.png", link: "https://www.123rf.com/", license: "Proprietary" },
+                    { name: "Dreamstime", icon: "dreamstime-icon.png", link: "https://www.dreamstime.com/", license: "Proprietary" }
+                ],
+                "Unlicensed": [
+                    { name: "Private Collections", icon: "private-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Confidential Media", icon: "confidential-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Personal Use Photos", icon: "photos-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Internal Videos", icon: "videos-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Work in Progress Films", icon: "wip-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Proof of Concepts Media", icon: "poc-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Unreleased Projects Media", icon: "unreleased-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Experimental Art", icon: "experimental-icon.png", link: "#", license: "Unlicensed" }
+                ]
+            },
+            "Font": {
+                "Public Domain": [
+                    { name: "OFL Fonts", icon: "ofl-icon.png", link: "https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL", license: "OFL" },
+                    { name: "Google Fonts", icon: "googlefonts-icon.png", link: "https://fonts.google.com/", license: "OFL" },
+                    { name: "Font Squirrel", icon: "fontsquirrel-icon.png", link: "https://www.fontsquirrel.com/", license: "Public Domain" },
+                    { name: "DaFont", icon: "dafont-icon.png", link: "https://www.dafont.com/", license: "Public Domain" },
+                    { name: "Lost Type Co-op", icon: "losttype-icon.png", link: "https://www.losttype.com/", license: "Public Domain" },
+                    { name: "League of Movable Type", icon: "leagueofmovabletype-icon.png", link: "https://www.theleagueofmoveabletype.com/", license: "OFL" },
+                    { name: "Font Library", icon: "fontlibrary-icon.png", link: "https://fontlibrary.org/", license: "OFL" },
+                    { name: "Open Font Library", icon: "openfontlibrary-icon.png", link: "https://fontlibrary.org/", license: "Public Domain" }
+                ],
+                "Copyleft License": [
+                    { name: "OFL Fonts", icon: "ofl-icon.png", link: "https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL", license: "OFL" },
+                    { name: "Google Fonts", icon: "googlefonts-icon.png", link: "https://fonts.google.com/", license: "OFL" },
+                    { name: "Font Squirrel", icon: "fontsquirrel-icon.png", link: "https://www.fontsquirrel.com/", license: "OFL" },
+                    { name: "League of Movable Type", icon: "leagueofmovabletype-icon.png", link: "https://www.theleagueofmoveabletype.com/", license: "OFL" },
+                    { name: "Font Library", icon: "fontlibrary-icon.png", link: "https://fontlibrary.org/", license: "OFL" },
+                    { name: "Open Font Library", icon: "openfontlibrary-icon.png", link: "https://fontlibrary.org/", license: "OFL" },
+                    { name: "GUST e-foundry", icon: "gustef-icon.png", link: "http://www.gust.org.pl/projects/e-foundry", license: "GUST" },
+                    { name: "Adobe Fonts", icon: "adobefonts-icon.png", link: "https://fonts.adobe.com/", license: "OFL" }
+                ],
+                "Open Source/Permissive License": [
+                    { name: "OFL Fonts", icon: "ofl-icon.png", link: "https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL", license: "OFL" },
+                    { name: "Google Fonts", icon: "googlefonts-icon.png", link: "https://fonts.google.com/", license: "OFL" },
+                    { name: "Font Squirrel", icon: "fontsquirrel-icon.png", link: "https://www.fontsquirrel.com/", license: "OFL" },
+                    { name: "League of Movable Type", icon: "leagueofmovabletype-icon.png", link: "https://www.theleagueofmoveabletype.com/", license: "OFL" },
+                    { name: "Font Library", icon: "fontlibrary-icon.png", link: "https://fontlibrary.org/", license: "OFL" },
+                    { name: "Open Font Library", icon: "openfontlibrary-icon.png", link: "https://fontlibrary.org/", license: "OFL" },
+                    { name: "GUST e-foundry", icon: "gustef-icon.png", link: "http://www.gust.org.pl/projects/e-foundry", license: "GUST" },
+                    { name: "Adobe Fonts", icon: "adobefonts-icon.png", link: "https://fonts.adobe.com/", license: "OFL" }
+                ],
+                "Proprietary (Commercial) License": [
+                    { name: "Monotype", icon: "monotype-icon.png", link: "https://www.monotype.com/", license: "Proprietary" },
+                    { name: "Adobe Fonts", icon: "adobefonts-icon.png", link: "https://fonts.adobe.com/", license: "Proprietary" },
+                    { name: "Linotype", icon: "linotype-icon.png", link: "https://www.linotype.com/", license: "Proprietary" },
+                    { name: "FontShop", icon: "fontshop-icon.png", link: "https://www.fontshop.com/", license: "Proprietary" },
+                    { name: "Fonts.com", icon: "fontscom-icon.png", link: "https://www.fonts.com/", license: "Proprietary" },
+                    { name: "Fontspring", icon: "fontspring-icon.png", link: "https://www.fontspring.com/", license: "Proprietary" },
+                    { name: "MyFonts", icon: "myfonts-icon.png", link: "https://www.myfonts.com/", license: "Proprietary" },
+                    { name: "Typekit", icon: "typekit-icon.png", link: "https://typekit.com/", license: "Proprietary" }
+                ],
+                "Proprietary (Non-Commercial) License": [
+                    { name: "Monotype", icon: "monotype-icon.png", link: "https://www.monotype.com/", license: "Proprietary" },
+                    { name: "Adobe Fonts", icon: "adobefonts-icon.png", link: "https://fonts.adobe.com/", license: "Proprietary" },
+                    { name: "Linotype", icon: "linotype-icon.png", link: "https://www.linotype.com/", license: "Proprietary" },
+                    { name: "FontShop", icon: "fontshop-icon.png", link: "https://www.fontshop.com/", license: "Proprietary" },
+                    { name: "Fonts.com", icon: "fontscom-icon.png", link: "https://www.fonts.com/", license: "Proprietary" },
+                    { name: "Fontspring", icon: "fontspring-icon.png", link: "https://www.fontspring.com/", license: "Proprietary" },
+                    { name: "MyFonts", icon: "myfonts-icon.png", link: "https://www.myfonts.com/", license: "Proprietary" },
+                    { name: "Typekit", icon: "typekit-icon.png", link: "https://typekit.com/", license: "Proprietary" }
+                ],
+                "Unlicensed": [
+                    { name: "Private Fonts", icon: "private-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Confidential Fonts", icon: "confidential-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Personal Use Fonts", icon: "fonts-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Internal Fonts", icon: "internal-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Work in Progress Fonts", icon: "wip-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Proof of Concepts Fonts", icon: "poc-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Unreleased Projects Fonts", icon: "unreleased-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Experimental Fonts", icon: "experimental-icon.png", link: "#", license: "Unlicensed" }
+                ]
+            },
+            "Hardware": {
+                "Public Domain": [
+                    { name: "Open Source Ecology", icon: "ose-icon.png", link: "https://www.opensourceecology.org/", license: "Public Domain" },
+                    { name: "Open Compute Project", icon: "ocp-icon.png", link: "https://www.opencompute.org/", license: "Public Domain" },
+                    { name: "Open Hardware Repository", icon: "ohr-icon.png", link: "https://www.ohwr.org/", license: "Public Domain" },
+                    { name: "FarmBot", icon: "farmbot-icon.png", link: "https://farm.bot/", license: "Public Domain" },
+                    { name: "Arduino", icon: "arduino-icon.png", link: "https://www.arduino.cc/", license: "Public Domain" },
+                    { name: "Open Source Beehives", icon: "osbeehives-icon.png", link: "https://www.opensourcebeehives.net/", license: "Public Domain" },
+                    { name: "Libre Hardware Monitor", icon: "librehardwaremonitor-icon.png", link: "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor", license: "Public Domain" },
+                    { name: "Public Invention", icon: "publicinvention-icon.png", link: "https://www.pubinv.org/", license: "Public Domain" }
+                ],
+                "Copyleft License": [
+                    { name: "CERN Open Hardware License", icon: "cern-icon.png", link: "https://www.ohwr.org/documents/294", license: "CERN OHL" },
+                    { name: "Open Compute Project", icon: "ocp-icon.png", link: "https://www.opencompute.org/", license: "OCP" },
+                    { name: "Arduino", icon: "arduino-icon.png", link: "https://www.arduino.cc/", license: "CC BY-SA 3.0" },
+                    { name: "Open Source Ecology", icon: "ose-icon.png", link: "https://www.opensourceecology.org/", license: "CC BY-SA 3.0" },
+                    { name: "Open Hardware Repository", icon: "ohr-icon.png", link: "https://www.ohwr.org/", license: "CERN OHL" },
+                    { name: "FarmBot", icon: "farmbot-icon.png", link: "https://farm.bot/", license: "CC BY-SA 3.0" },
+                    { name: "Libre Hardware Monitor", icon: "librehardwaremonitor-icon.png", link: "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor", license: "CC BY-SA 3.0" },
+                    { name: "Open Source Beehives", icon: "osbeehives-icon.png", link: "https://www.opensourcebeehives.net/", license: "CC BY-SA 3.0" }
+                ],
+                "Open Source/Permissive License": [
+                    { name: "CERN Open Hardware License", icon: "cern-icon.png", link: "https://www.ohwr.org/documents/294", license: "CERN OHL" },
+                    { name: "Open Compute Project", icon: "ocp-icon.png", link: "https://www.opencompute.org/", license: "OCP" },
+                    { name: "Arduino", icon: "arduino-icon.png", link: "https://www.arduino.cc/", license: "MIT License" },
+                    { name: "Open Source Ecology", icon: "ose-icon.png", link: "https://www.opensourceecology.org/", license: "MIT License" },
+                    { name: "Open Hardware Repository", icon: "ohr-icon.png", link: "https://www.ohwr.org/", license: "CERN OHL" },
+                    { name: "FarmBot", icon: "farmbot-icon.png", link: "https://farm.bot/", license: "MIT License" },
+                    { name: "Libre Hardware Monitor", icon: "librehardwaremonitor-icon.png", link: "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor", license: "MIT License" },
+                    { name: "Open Source Beehives", icon: "osbeehives-icon.png", link: "https://www.opensourcebeehives.net/", license: "MIT License" }
+                ],
+                "Proprietary (Commercial) License": [
+                    { name: "Tesla", icon: "tesla-icon.png", link: "https://www.tesla.com/", license: "Proprietary" },
+                    { name: "Intel", icon: "intel-icon.png", link: "https://www.intel.com/", license: "Proprietary" },
+                    { name: "Nvidia", icon: "nvidia-icon.png", link: "https://www.nvidia.com/", license: "Proprietary" },
+                    { name: "ARM", icon: "arm-icon.png", link: "https://www.arm.com/", license: "Proprietary" },
+                    { name: "AMD", icon: "amd-icon.png", link: "https://www.amd.com/", license: "Proprietary" },
+                    { name: "Broadcom", icon: "broadcom-icon.png", link: "https://www.broadcom.com/", license: "Proprietary" },
+                    { name: "Qualcomm", icon: "qualcomm-icon.png", link: "https://www.qualcomm.com/", license: "Proprietary" },
+                    { name: "Apple", icon: "apple-icon.png", link: "https://www.apple.com/", license: "Proprietary" }
+                ],
+                "Proprietary (Non-Commercial) License": [
+                    { name: "Tesla", icon: "tesla-icon.png", link: "https://www.tesla.com/", license: "Proprietary" },
+                    { name: "Intel", icon: "intel-icon.png", link: "https://www.intel.com/", license: "Proprietary" },
+                    { name: "Nvidia", icon: "nvidia-icon.png", link: "https://www.nvidia.com/", license: "Proprietary" },
+                    { name: "ARM", icon: "arm-icon.png", link: "https://www.arm.com/", license: "Proprietary" },
+                    { name: "AMD", icon: "amd-icon.png", link: "https://www.amd.com/", license: "Proprietary" },
+                    { name: "Broadcom", icon: "broadcom-icon.png", link: "https://www.broadcom.com/", license: "Proprietary" },
+                    { name: "Qualcomm", icon: "qualcomm-icon.png", link: "https://www.qualcomm.com/", license: "Proprietary" },
+                    { name: "Apple", icon: "apple-icon.png", link: "https://www.apple.com/", license: "Proprietary" }
+                ],
+                "Unlicensed": [
+                    { name: "Private Hardware Designs", icon: "private-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Confidential Hardware", icon: "confidential-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Personal Use Hardware", icon: "hardware-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Internal Hardware Projects", icon: "internal-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Work in Progress Hardware", icon: "wip-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Proof of Concepts Hardware", icon: "poc-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Unreleased Hardware Projects", icon: "unreleased-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Experimental Hardware Designs", icon: "experimental-icon.png", link: "#", license: "Unlicensed" }
+                ]
+            },
+            "Branding": {
+                "Public Domain": [
+                    { name: "Public Domain Vectors", icon: "pdvectors-icon.png", link: "https://publicdomainvectors.org/", license: "Public Domain" },
+                    { name: "Public Domain Archive", icon: "archive-icon.png", link: "https://publicdomainarchive.com/", license: "Public Domain" },
+                    { name: "Pixabay", icon: "pixabay-icon.png", link: "https://pixabay.com/", license: "Public Domain" },
+                    { name: "Pexels", icon: "pexels-icon.png", link: "https://www.pexels.com/", license: "Public Domain" },
+                    { name: "Flickr Commons", icon: "flickr-icon.png", link: "https://www.flickr.com/commons", license: "Public Domain" },
+                    { name: "Unsplash", icon: "unsplash-icon.png", link: "https://unsplash.com/", license: "Public Domain" },
+                    { name: "Smithsonian Open Access", icon: "smithsonian-icon.png", link: "https://www.si.edu/openaccess", license: "Public Domain" },
+                    { name: "Open Clipart", icon: "openclipart-icon.png", link: "https://openclipart.org/", license: "Public Domain" }
+                ],
+                "Copyleft License": [
+                    { name: "Creative Commons", icon: "cc-icon.png", link: "https://creativecommons.org/", license: "CC BY-SA 4.0" },
+                    { name: "Flickr Creative Commons", icon: "flickr-icon.png", link: "https://www.flickr.com/creativecommons/", license: "CC BY-SA 2.0" },
+                    { name: "Open Clipart", icon: "openclipart-icon.png", link: "https://openclipart.org/", license: "CC BY-SA 4.0" },
+                    { name: "Wikipedia", icon: "wikipedia-icon.png", link: "https://www.wikipedia.org/", license: "CC BY-SA 3.0" },
+                    { name: "Internet Archive", icon: "archive-icon.png", link: "https://archive.org/", license: "CC BY-SA 3.0" },
+                    { name: "Wikimedia Commons", icon: "wikimedia-icon.png", link: "https://commons.wikimedia.org/", license: "CC BY-SA 3.0" },
+                    { name: "LibreStock", icon: "librestock-icon.png", link: "https://librestock.com/", license: "CC BY-SA 4.0" },
+                    { name: "Openverse", icon: "openverse-icon.png", link: "https://wordpress.org/openverse/", license: "CC BY-SA 4.0" }
+                ],
+                "Open Source/Permissive License": [
+                    { name: "Pixabay", icon: "pixabay-icon.png", link: "https://pixabay.com/", license: "CC0 1.0" },
+                    { name: "Pexels", icon: "pexels-icon.png", link: "https://www.pexels.com/", license: "CC0 1.0" },
+                    { name: "Unsplash", icon: "unsplash-icon.png", link: "https://unsplash.com/", license: "Unsplash License" },
+                    { name: "Flickr Creative Commons", icon: "flickr-icon.png", link: "https://www.flickr.com/creativecommons/", license: "CC BY 2.0" },
+                    { name: "Public Domain Vectors", icon: "pdvectors-icon.png", link: "https://publicdomainvectors.org/", license: "CC0 1.0" },
+                    { name: "Open Clipart", icon: "openclipart-icon.png", link: "https://openclipart.org/", license: "CC0 1.0" },
+                    { name: "Wikimedia Commons", icon: "wikimedia-icon.png", link: "https://commons.wikimedia.org/", license: "CC0 1.0" },
+                    { name: "Smithsonian Open Access", icon: "smithsonian-icon.png", link: "https://www.si.edu/openaccess", license: "CC0 1.0" }
+                ],
+                "Proprietary (Commercial) License": [
+                    { name: "Adobe Stock", icon: "adobe-icon.png", link: "https://stock.adobe.com/", license: "Proprietary" },
+                    { name: "Getty Images", icon: "getty-icon.png", link: "https://www.gettyimages.com/", license: "Proprietary" },
+                    { name: "Shutterstock", icon: "shutterstock-icon.png", link: "https://www.shutterstock.com/", license: "Proprietary" },
+                    { name: "iStock", icon: "istock-icon.png", link: "https://www.istockphoto.com/", license: "Proprietary" },
+                    { name: "Alamy", icon: "alamy-icon.png", link: "https://www.alamy.com/", license: "Proprietary" },
+                    { name: "Fotolia", icon: "fotolia-icon.png", link: "https://www.fotolia.com/", license: "Proprietary" },
+                    { name: "123RF", icon: "123rf-icon.png", link: "https://www.123rf.com/", license: "Proprietary" },
+                    { name: "Dreamstime", icon: "dreamstime-icon.png", link: "https://www.dreamstime.com/", license: "Proprietary" }
+                ],
+                "Proprietary (Non-Commercial) License": [
+                    { name: "Adobe Stock", icon: "adobe-icon.png", link: "https://stock.adobe.com/", license: "Proprietary" },
+                    { name: "Getty Images", icon: "getty-icon.png", link: "https://www.gettyimages.com/", license: "Proprietary" },
+                    { name: "Shutterstock", icon: "shutterstock-icon.png", link: "https://www.shutterstock.com/", license: "Proprietary" },
+                    { name: "iStock", icon: "istock-icon.png", link: "https://www.istockphoto.com/", license: "Proprietary" },
+                    { name: "Alamy", icon: "alamy-icon.png", link: "https://www.alamy.com/", license: "Proprietary" },
+                    { name: "Fotolia", icon: "fotolia-icon.png", link: "https://www.fotolia.com/", license: "Proprietary" },
+                    { name: "123RF", icon: "123rf-icon.png", link: "https://www.123rf.com/", license: "Proprietary" },
+                    { name: "Dreamstime", icon: "dreamstime-icon.png", link: "https://www.dreamstime.com/", license: "Proprietary" }
+                ],
+                "Unlicensed": [
+                    { name: "Private Branding Assets", icon: "private-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Confidential Branding", icon: "confidential-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Personal Use Logos", icon: "logos-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Internal Branding Projects", icon: "internal-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Work in Progress Branding", icon: "wip-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Proof of Concepts Branding", icon: "poc-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Unreleased Branding Projects", icon: "unreleased-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Experimental Branding Designs", icon: "experimental-icon.png", link: "#", license: "Unlicensed" }
+                ]
+            },
+            "Other": {
+                "Public Domain": [
+                    { name: "Public Domain Archive", icon: "archive-icon.png", link: "https://publicdomainarchive.com/", license: "Public Domain" },
+                    { name: "Pixabay", icon: "pixabay-icon.png", link: "https://pixabay.com/", license: "Public Domain" },
+                    { name: "Pexels", icon: "pexels-icon.png", link: "https://www.pexels.com/", license: "Public Domain" },
+                    { name: "Flickr Commons", icon: "flickr-icon.png", link: "https://www.flickr.com/commons", license: "Public Domain" },
+                    { name: "Unsplash", icon: "unsplash-icon.png", link: "https://unsplash.com/", license: "Public Domain" },
+                    { name: "Smithsonian Open Access", icon: "smithsonian-icon.png", link: "https://www.si.edu/openaccess", license: "Public Domain" },
+                    { name: "Wikimedia Commons", icon: "wikimedia-icon.png", link: "https://commons.wikimedia.org/", license: "Public Domain" },
+                    { name: "Open Clipart", icon: "openclipart-icon.png", link: "https://openclipart.org/", license: "Public Domain" }
+                ],
+                "Copyleft License": [
+                    { name: "Creative Commons", icon: "cc-icon.png", link: "https://creativecommons.org/", license: "CC BY-SA 4.0" },
+                    { name: "Flickr Creative Commons", icon: "flickr-icon.png", link: "https://www.flickr.com/creativecommons/", license: "CC BY-SA 2.0" },
+                    { name: "Open Clipart", icon: "openclipart-icon.png", link: "https://openclipart.org/", license: "CC BY-SA 4.0" },
+                    { name: "Wikipedia", icon: "wikipedia-icon.png", link: "https://www.wikipedia.org/", license: "CC BY-SA 3.0" },
+                    { name: "Internet Archive", icon: "archive-icon.png", link: "https://archive.org/", license: "CC BY-SA 3.0" },
+                    { name: "Wikimedia Commons", icon: "wikimedia-icon.png", link: "https://commons.wikimedia.org/", license: "CC BY-SA 3.0" },
+                    { name: "LibreStock", icon: "librestock-icon.png", link: "https://librestock.com/", license: "CC BY-SA 4.0" },
+                    { name: "Openverse", icon: "openverse-icon.png", link: "https://wordpress.org/openverse/", license: "CC BY-SA 4.0" }
+                ],
+                "Open Source/Permissive License": [
+                    { name: "Pixabay", icon: "pixabay-icon.png", link: "https://pixabay.com/", license: "CC0 1.0" },
+                    { name: "Pexels", icon: "pexels-icon.png", link: "https://www.pexels.com/", license: "CC0 1.0" },
+                    { name: "Unsplash", icon: "unsplash-icon.png", link: "https://unsplash.com/", license: "Unsplash License" },
+                    { name: "Flickr Creative Commons", icon: "flickr-icon.png", link: "https://www.flickr.com/creativecommons/", license: "CC BY 2.0" },
+                    { name: "Public Domain Vectors", icon: "pdvectors-icon.png", link: "https://publicdomainvectors.org/", license: "CC0 1.0" },
+                    { name: "Open Clipart", icon: "openclipart-icon.png", link: "https://openclipart.org/", license: "CC0 1.0" },
+                    { name: "Wikimedia Commons", icon: "wikimedia-icon.png", link: "https://commons.wikimedia.org/", license: "CC0 1.0" },
+                    { name: "Smithsonian Open Access", icon: "smithsonian-icon.png", link: "https://www.si.edu/openaccess", license: "CC0 1.0" }
+                ],
+                "Proprietary (Commercial) License": [
+                    { name: "Adobe Stock", icon: "adobe-icon.png", link: "https://stock.adobe.com/", license: "Proprietary" },
+                    { name: "Getty Images", icon: "getty-icon.png", link: "https://www.gettyimages.com/", license: "Proprietary" },
+                    { name: "Shutterstock", icon: "shutterstock-icon.png", link: "https://www.shutterstock.com/", license: "Proprietary" },
+                    { name: "iStock", icon: "istock-icon.png", link: "https://www.istockphoto.com/", license: "Proprietary" },
+                    { name: "Alamy", icon: "alamy-icon.png", link: "https://www.alamy.com/", license: "Proprietary" },
+                    { name: "Fotolia", icon: "fotolia-icon.png", link: "https://www.fotolia.com/", license: "Proprietary" },
+                    { name: "123RF", icon: "123rf-icon.png", link: "https://www.123rf.com/", license: "Proprietary" },
+                    { name: "Dreamstime", icon: "dreamstime-icon.png", link: "https://www.dreamstime.com/", license: "Proprietary" }
+                ],
+                "Proprietary (Non-Commercial) License": [
+                    { name: "Adobe Stock", icon: "adobe-icon.png", link: "https://stock.adobe.com/", license: "Proprietary" },
+                    { name: "Getty Images", icon: "getty-icon.png", link: "https://www.gettyimages.com/", license: "Proprietary" },
+                    { name: "Shutterstock", icon: "shutterstock-icon.png", link: "https://www.shutterstock.com/", license: "Proprietary" },
+                    { name: "iStock", icon: "istock-icon.png", link: "https://www.istockphoto.com/", license: "Proprietary" },
+                    { name: "Alamy", icon: "alamy-icon.png", link: "https://www.alamy.com/", license: "Proprietary" },
+                    { name: "Fotolia", icon: "fotolia-icon.png", link: "https://www.fotolia.com/", license: "Proprietary" },
+                    { name: "123RF", icon: "123rf-icon.png", link: "https://www.123rf.com/", license: "Proprietary" },
+                    { name: "Dreamstime", icon: "dreamstime-icon.png", link: "https://www.dreamstime.com/", license: "Proprietary" }
+                ],
+                "Unlicensed": [
+                    { name: "Private Works", icon: "private-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Confidential Works", icon: "confidential-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Personal Use Works", icon: "works-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Internal Projects", icon: "internal-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Work in Progress Works", icon: "wip-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Proof of Concepts", icon: "poc-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Unreleased Works", icon: "unreleased-icon.png", link: "#", license: "Unlicensed" },
+                    { name: "Experimental Works", icon: "experimental-icon.png", link: "#", license: "Unlicensed" }
+                ]
+            }
+        };
+
+        let answers = {
+            dataType: '',
+            distribution: '',
+            redistribution: '',
+            derivatives: '',
+            attribution: ''
+        };
+
+        function selectOption(question, value, nextQuestion) {
+            answers[question] = value;
+            document.getElementById(`question${nextQuestion}`).classList.remove('active');
+            if (nextQuestion < 5) {
+                document.getElementById(`question${nextQuestion + 1}`).classList.add('active');
+            } else {
+                showResult();
+            }
+        }
+
+        function previousQuestion(prevQuestion) {
+            document.getElementById(`question${prevQuestion + 1}`).classList.remove('active');
+            document.getElementById(`question${prevQuestion}`).classList.add('active');
+        }
+
+        function showResult() {
+            let licenseType = determineLicenseType();
+            let result = generateResult(licenseType, answers.dataType);
+            let resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+
+                <p>Your choices: ${formatChoices()}</p>
+                <h2>Recommended License Type: ${result.name}</h2>
+                <p>${result.description}</p>
+                <div class="license-details">
+                    <div class="row">
+                        <div class="column">
+                            <h3>Permissions</h3>
+                            <ul>
+                                ${result.permissions.map(permission => `<li>${permission}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="column">
+                            <h3>Conditions</h3>
+                            <ul>
+                                ${result.conditions.map(condition => `<li>${condition}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="column">
+                            <h3>Limitations</h3>
+                            <ul>
+                                ${result.limitations.map(limitation => `<li>${limitation}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <h3>Example Projects</h3>
+                <div class="project-list">
+                    ${result.examples.map(example => `
+                        <div class="project">
+                            <img src="${example.icon}" alt="${example.name}">
+                            <p><a href="${example.link}" target="_blank">${example.name}</a></p>
+                            <p>License: ${example.license}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="restart-button" onclick="restart()">Restart</button>
+            `;
+            document.getElementById('question5').classList.remove('active');
+            resultDiv.classList.add('active');
+        }
+
+        function determineLicenseType() {
+            if (answers.distribution === 'Freely') {
+                if (answers.redistribution === 'YesFree' && answers.derivatives === 'Yes' && answers.attribution === 'No') {
+                    return 'Public Domain';
+                } else if (answers.redistribution === 'YesFree' && answers.derivatives === 'YesSameLicense') {
+                    return 'Copyleft License';
+                } else {
+                    return 'Open Source/Permissive License';
+                }
+            } else if (answers.distribution === 'Conditional') {
+                return 'Proprietary (Non-Commercial) License';
+            } else {
+                return 'Proprietary (Commercial) License';
+            }
+        }
+
+        function generateResult(licenseType, dataType) {
+            const license = licenseTypes[licenseType];
+            const examples = dataTypeExamples[dataType][licenseType] || [];
+
+            return {
+                name: `${licenseType} for ${dataType}`,
+                description: license.description,
+                permissions: license.permissions,
+                conditions: license.conditions,
+                limitations: license.limitations,
+                examples: examples
+            };
+        }
+
+        function formatChoices() {
+            const choices = {
+                dataType: answers.dataType,
+                distribution: {
+                    'Freely': 'Freely Distributed',
+                    'Conditional': 'Under certain conditions',
+                    'Commercial': 'For commercial purposes'
+                }[answers.distribution],
+                redistribution: {
+                    'YesFree': 'Redistribution for any purpose',
+                    'YesRestricted': 'Redistribution with restricted purposes',
+                    'No': 'No redistribution'
+                }[answers.redistribution],
+                derivatives: {
+                    'Yes': 'Derivatives allowed',
+                    'YesSameLicense': 'Derivatives with the same license',
+                    'YesModifications': 'Derivatives with modifications only',
+                    'No': 'No derivatives allowed'
+                }[answers.derivatives],
+                attribution: {
+                    'Yes': 'with Attribution',
+                    'No': 'without Attribution'
+                }[answers.attribution]
+            };
+
+            return `${choices.dataType}, ${choices.distribution}, ${choices.redistribution}, ${choices.derivatives}, ${choices.attribution}`;
+        }
+
+        function restart() {
+            answers = {
+                dataType: '',
+                distribution: '',
+                redistribution: '',
+                derivatives: '',
+                attribution: ''
+            };
+            document.getElementById('result').classList.remove('active');
+            document.getElementById('result').innerHTML = ''; // Clear result
+            document.getElementById('question1').classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('question1').classList.add('active');
+        });
+    </script>
+</body>
+</html>
